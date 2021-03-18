@@ -57,69 +57,40 @@
         <br>
         <p class="has-text-danger">หมายเหตุ : ให้ใช้ API นี้ในการดึงข้อมูลมาแสดงผล <code>https://jsonplaceholder.typicode.com/users</code></p>
         <br>
-        <div class="field is-grouped">
+        <div class="field is-grouped" id="input">
           <p class="control is-expanded">
-            <input class="input" type="text" placeholder="ระบุรหัสผ่านที่ใช้ในการเข้าถึง">
+            <input class="input" type="text" placeholder="ระบุรหัสผ่านที่ใช้ในการเข้าถึง" v-model="password">
           </p>
           <p class="control">
-            <a class="button is-info" @click="fetchUserData()">
+            <a class="button is-info" @click="checkAuth()">
               ยืนยันรหัสผ่าน
             </a>
           </p>
         </div>
+        <div class="field is-grouped is-hidden" id="checking">
+          <p class='control is-expanded has-background-primary has-text-centered is-size-3 has-text-weight-bold'>
+            Checking Auth...
+          </p>
+        </div>
+        <div class="field is-grouped is-hidden" id="fetching">
+          <p class='control is-expanded has-background-primary has-text-centered is-size-3 has-text-weight-bold'>
+            Fetching Data...
+          </p>
+        </div>
+        <div class="field is-grouped is-hidden" id="wrong">
+          <p class='control is-expanded has-background-primary has-text-centered is-size-3 has-text-weight-bold'>
+            รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง
+          </p>
+        </div>
         <!-- ส่วนของการแสดงผล -->
-        <div class="columns is-multiline is-hidden">
-          <div class="column is-3">
+        <div class="columns is-multiline">
+          <div class="column is-3" v-for="user in users">
             <div class="card">
               <div class="card-content">
                 <div class="content">
-                  <b>ชื่อสกุล</b>
+                  <b>{{user.name}}</b>
                   <br>
-                  อีเมล
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-3">
-            <div class="card">
-              <div class="card-content">
-                <div class="content">
-                  <b>ชื่อสกุล</b>
-                  <br>
-                  อีเมล
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-3">
-            <div class="card">
-              <div class="card-content">
-                <div class="content">
-                  <b>ชื่อสกุล</b>
-                  <br>
-                  อีเมล
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-3">
-            <div class="card">
-              <div class="card-content">
-                <div class="content">
-                  <b>ชื่อสกุล</b>
-                  <br>
-                  อีเมล
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="column is-3">
-            <div class="card">
-              <div class="card-content">
-                <div class="content">
-                  <b>ชื่อสกุล</b>
-                  <br>
-                  อีเมล
+                  {{user.email}}
                 </div>
               </div>
             </div>
@@ -135,14 +106,45 @@
       var app = new Vue({
         el: "#app",
         data: {
-            
+            password:'',
+            users:{}
         },
         methods: {
           fetchUserData() {
-
+            document.getElementById("fetching").classList.add('is-hidden')
+            this.getAPI('https://jsonplaceholder.typicode.com/users', (res) => {
+                this.users = res
+            })
           },
           checkAuth() {
-              
+              document.getElementById("input").classList.add('is-hidden')
+              document.getElementById("checking").classList.remove('is-hidden')
+              setTimeout(() => {
+                let check = new Promise((resolve,reject) => {
+                  if(this.password == 'clubhouse'){
+                    console.log('yes')
+                    resolve()
+                  }else{
+                    console.log('no')
+                    reject()
+                  }
+                })
+                check.then(()=>{
+                  document.getElementById("checking").classList.add('is-hidden')
+                  document.getElementById("fetching").classList.remove('is-hidden')
+                  setTimeout(()=>{
+                    this.fetchUserData()
+                  },1000)
+                })
+                check.catch(()=>{
+                  document.getElementById("checking").classList.add('is-hidden')
+                  document.getElementById("wrong").classList.remove('is-hidden')
+                  setTimeout(()=>{
+                    document.getElementById("wrong").classList.add('is-hidden')
+                    document.getElementById("input").classList.remove('is-hidden')
+                  },3000)
+                })
+              }, 3000);
           },
           getAPI (url, success, error) {
             var xhttp = new XMLHttpRequest();

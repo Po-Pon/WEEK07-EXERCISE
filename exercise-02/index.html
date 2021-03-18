@@ -57,7 +57,7 @@
         <br /><br>
         <div class="columns">
           <div class="column is-one-fifth">
-            <input class="input" type="number" placeholder="นับถอยหลังกี่วินาที ?">
+            <input class="input" type="number" placeholder="นับถอยหลังกี่วินาที ?" v-model="Time">
           </div>
           <div class="column is-one-fifth">
             <button class="button is-dark" @click="stopTime()">
@@ -67,9 +67,9 @@
           <div class="column has-background-link-light has-text-centered">
             <h2 class="title is-2">
             <!-- แก้ไขส่วนนี้เพื่อนำข้อมูลมาแสดงผล -->
-              <span>00</span>
+              <span>{{setMinute}}</span>
               <span>:</span>
-              <span>00</span>
+              <span>{{setSecond}}</span>
             </h2>
           </div>
         </div>
@@ -91,8 +91,8 @@
           </div>
           <div class="column has-background-link-light	has-text-centered">
             <!-- แก้ไขส่วนนี้เพื่อนำข้อมูลมาแสดงผล -->
-            <span class="count-down">10</span>
-            <img src="" alt="">
+            <span class="count-down">{{countdown}}</span>
+            <img v-bind:src="dogImg" alt="">
           </div>
         </div>
       </div>
@@ -116,10 +116,10 @@
           <div class="column has-background-link-light">
             <!-- แก้ไขส่วนนี้เพื่อนำข้อมูลมาแสดงผล -->
             <dl>
-              <li>ดีเลย์ 2 วินาที</li>
-              <li>ดีเลย์ 1 วินาที</li>
-              <li>ดีเลย์ 3 วินาที</li>
-              <li>ดีเลย์ 5 วินาที</li>
+              <li id="num1" v-show="text[0].status"></li>
+              <li id="num2" v-show="text[1].status"></li>
+              <li id="num3" v-show="text[2].status"></li>
+              <li id="num4" v-show="text[3].status"></li>
             </dl>
           </div>
         </div>
@@ -147,19 +147,67 @@
       var app = new Vue({
         el: "#app",
         data: {
-          
+          Time: 119,
+          setMinute: '00',
+          setSecond: '00',
+          dogImg: '',
+          countdown: 10,
+          text: [{title:'', status:false, id:'num1'}, {title:'', status:false, id:'num2'}, {title:'', status:false, id:'num3'}, {title:'', status:false, id:'num4'}]
         },
         methods: {
-          stopTime(setTime) {
-
+          stopTime() {
+            clearInterval(time)
+            var time = setInterval(() => {
+              if(this.Time >= 0){
+              this.setMinute = Math.floor(this.Time/60).toString().padStart(2,'0')
+              this.setSecond = (this.Time%60).toString().padStart(2,'0')
+              this.Time--
+              }else{
+                clearInterval(Time)
+              }
+            },1000)
           },
           getDogDemo(url) {
-            getAPI('https://dog.ceo/api/breeds/image/random', function (res) {
-              console.log(res)
-            })
+            var time = setInterval(() => {
+              if(this.countdown >= 1){
+                this.countdown--
+              }else{
+                getAPI('https://dog.ceo/api/breeds/image/random', (res) => {
+                this.dogImg = res.message
+                })
+                this.countdown = 10
+                clearInterval(time)
+              }
+            },1000)
           },
           getMedium(url) {
-            
+            getAPI('https://v1.nocodeapi.com/jacktnp/medium/xvYwlRhrjtVLsWUn', (res) => {
+                console.log(res)
+                for(let i = 1; i < 5; i ++){
+                  var some = res[i-1]
+                  var obj = JSON.parse(JSON.stringify(some))
+                  var text = obj['content:encoded']
+                  this.text[i-1].title = text
+                }
+                let settext = (index) =>{
+                  document.getElementById('num' + index).innerHTML = this.text[index - 1].title
+                  this.text[index - 1].status = true
+                  console.log(index)
+                }
+                setTimeout(() => {
+                  settext(1)
+                  setTimeout(() =>{
+                    settext(2)
+                    setTimeout(() =>{
+                      settext(3)
+                      setTimeout(() =>{
+                        settext(4)
+                      },5000)
+                    },1000)
+                  },3000)
+                },2000)
+                
+            })
           }
         }
       });

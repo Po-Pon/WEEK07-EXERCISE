@@ -58,9 +58,9 @@
         <p class="has-text-danger">หมายเหตุ 2 : ในข้อนี้ให้ทำการประยุกต์ผลลัพธ์จากข้อ 3.1 โดยให้ใช้ฟังก์ชัน Async/Await ในการตรวจสอบ <code>checkAuth</code> และ <code>fetchUserData</code></p>
         <p class="has-text-danger">หมายเหตุ 3 : ให้นักศึกษาแก้ไขฟังก์ชัน <code>getAPI</code> โดยให้ปรับเป็นรูปแบบ Promise แทน</p>
         <br>
-        <div class="field is-grouped">
+        <div class="field is-grouped" id="input">
           <p class="control is-expanded">
-            <input class="input" type="text" placeholder="ระบุรหัสผ่านที่ใช้ในการเข้าถึง">
+            <input class="input" type="text" placeholder="ระบุรหัสผ่านที่ใช้ในการเข้าถึง" v-model="password">
           </p>
           <p class="control">
             <a class="button is-info" @click="fetchUserData()">
@@ -68,8 +68,35 @@
             </a>
           </p>
         </div>
+        <div class="field is-grouped is-hidden" id="checking">
+          <p class='control is-expanded has-background-primary has-text-centered is-size-3 has-text-weight-bold'>
+            Checking Auth...
+          </p>
+        </div>
+        <div class="field is-grouped is-hidden" id="fetching">
+          <p class='control is-expanded has-background-primary has-text-centered is-size-3 has-text-weight-bold'>
+            Fetching Data...
+          </p>
+        </div>
+        <div class="field is-grouped is-hidden" id="wrong">
+          <p class='control is-expanded has-background-primary has-text-centered is-size-3 has-text-weight-bold'>
+            รหัสผ่านไม่ถูกต้อง กรุณาลองอีกครั้ง
+          </p>
+        </div>
         <!-- ส่วนของการแสดงผล -->
-        
+        <div class="columns is-multiline">
+          <div class="column is-3" v-for="user in users">
+            <div class="card">
+              <div class="card-content">
+                <div class="content">
+                  <b>{{user.name}}</b>
+                  <br>
+                  {{user.email}}
+                </div>
+              </div>
+            </div> 
+          </div>
+        </div>
         <!-- ส่วนของการแสดงผล -->
       </div>
     </div>
@@ -78,29 +105,49 @@
       var app = new Vue({
         el: "#app",
         data: {
-            
+            password:'',
+            users:{},
         },
         methods: {
-          checkAuth() {
-              
+          checkAuth(res) {
+              if(this.password == 'bitcoin'){
+                setTimeout(()=>{
+                  document.getElementById("checking").classList.add('is-hidden')
+                  document.getElementById("fetching").classList.remove('is-hidden')
+                  setTimeout(()=>{
+                    document.getElementById("fetching").classList.add('is-hidden')
+                    this.users = res
+                  },1000)
+                },3000)
+              }else{
+                document.getElementById("checking").classList.add('is-hidden')
+                document.getElementById("wrong").classList.remove('is-hidden')
+                setTimeout(()=>{
+                  document.getElementById("wrong").classList.add('is-hidden')
+                  document.getElementById("input").classList.remove('is-hidden')
+                },3000)
+              }
           },
           async fetchUserData() {
-              
+            document.getElementById("input").classList.add('is-hidden')
+            document.getElementById("checking").classList.remove('is-hidden')
+            let data = await this.getAPI('https://jsonplaceholder.typicode.com/users')
+            this.checkAuth(data)
           },
-          getAPI (url, success, error) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
+          getAPI (url) {
+            var promise = new Promise((resolve, reject) =>{
+              var xhttp = new XMLHttpRequest();
+              xhttp.onreadystatechange = function () {
               if (this.readyState == 4 && this.status == 200) {
                 const res = JSON.parse(this.response);
-                success(res);
-              } else if (this.readyState == 4) {
-                const res = JSON.parse(this.response);
-                error(res);
+                resolve(res);
               }
-            };
-            xhttp.open("GET", url, true);
-            xhttp.setRequestHeader("Accept", "application/json");
-            xhttp.send();
+              }
+              xhttp.open("GET", url, true);
+              xhttp.setRequestHeader("Accept", "application/json");
+              xhttp.send();
+            })
+            return promise
           },
         }
       });
