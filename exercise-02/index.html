@@ -168,6 +168,7 @@
             },1000)
           },
           getDogDemo(url) {
+            this.countdown = 10
             var time = setInterval(() => {
               if(this.countdown >= 1){
                 this.countdown--
@@ -175,7 +176,7 @@
                 getAPI('https://dog.ceo/api/breeds/image/random', (res) => {
                 this.dogImg = res.message
                 })
-                this.countdown = 10
+                this.countdown = ""
                 clearInterval(time)
               }
             },1000)

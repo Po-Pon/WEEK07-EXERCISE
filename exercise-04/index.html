@@ -120,11 +120,13 @@
                   },1000)
                 },3000)
               }else{
-                document.getElementById("checking").classList.add('is-hidden')
-                document.getElementById("wrong").classList.remove('is-hidden')
                 setTimeout(()=>{
-                  document.getElementById("wrong").classList.add('is-hidden')
-                  document.getElementById("input").classList.remove('is-hidden')
+                  document.getElementById("checking").classList.add('is-hidden')
+                  document.getElementById("wrong").classList.remove('is-hidden')
+                  setTimeout(()=>{
+                    document.getElementById("wrong").classList.add('is-hidden')
+                    document.getElementById("input").classList.remove('is-hidden')
+                  },3000)
                 },3000)
               }
           },
